@@ -1,0 +1,7 @@
+{
+  "name": "Gemini Note Taker",
+  "description": "A smart note-taking application powered by the Gemini API. Create, edit, and manage your notes, and use AI to summarize, improve, brainstorm ideas, and dictate content.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
