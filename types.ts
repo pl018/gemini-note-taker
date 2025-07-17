@@ -2,14 +2,16 @@ export interface Note {
   id: string;
   title: string;
   content: string;
+  tags: string[];
   createdAt: string;
 }
 
 export enum AiAction {
   GENERATE_PROMPT = 'generate_prompt',
   SUMMARIZE = 'summarize',
-    IMPROVE = 'improve',
-  BRAINSTORM = 'brainstorm'
+  IMPROVE = 'improve',
+  BRAINSTORM = 'brainstorm',
+  AUTO_TAG = 'auto_tag'
 }
 
 export interface BrainstormOptions {

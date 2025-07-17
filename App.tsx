@@ -11,7 +11,8 @@ const App: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>(() => {
     const savedNotes = localStorage.getItem('gemini-notes');
     if (savedNotes) {
-      return JSON.parse(savedNotes);
+      const parsedNotes = JSON.parse(savedNotes);
+      return parsedNotes.map((note: Note) => ({...note, tags: note.tags || []}));
     }
     return [
       {
@@ -43,6 +44,7 @@ const App: React.FC = () => {
       title: 'Untitled Note',
       content: '',
       createdAt: new Date().toISOString(),
+      tags: [],
     };
     setNotes(prevNotes => [newNote, ...prevNotes]);
     setSelectedNoteId(newNote.id);
@@ -54,10 +56,10 @@ const App: React.FC = () => {
     setError(null);
   };
 
-  const handleUpdateNote = (id: string, title: string, content: string) => {
+  const handleUpdateNote = (id: string, title: string, content: string, tags?: string[]) => {
     setNotes(prevNotes =>
       prevNotes.map(note =>
-        note.id === id ? { ...note, title, content } : note
+        note.id === id ? { ...note, title, content, tags: tags ?? note.tags } : note
       )
     );
     setError(null);
@@ -79,6 +81,17 @@ const App: React.FC = () => {
     setError(null);
     try {
       const textToProcess = action === AiAction.BRAINSTORM ? note.title : note.content;
+      if (action === AiAction.AUTO_TAG) {
+        const result = await runAiAction(action, note.content, {}, false);
+        const tags = result.split(',').map(tag => tag.trim()).filter(Boolean);
+        setNotes(prevNotes =>
+          prevNotes.map(n => 
+            n.id === note.id ? { ...n, tags: [...new Set([...n.tags, ...tags])] } : n
+          )
+        );
+        setIsLoading(false);
+        return;
+      }
       if (!textToProcess.trim()) {
         setError(action === AiAction.BRAINSTORM ? 'Please provide a title to brainstorm ideas.' : 'Please provide some content to process.');
         setIsLoading(false);
@@ -93,6 +106,7 @@ const App: React.FC = () => {
           title: `${note.title} (AI-Generated)`,
           content: result,
           createdAt: new Date().toISOString(),
+          tags: note.tags || [],
         };
         setNotes(prevNotes => [newNote, ...prevNotes]);
         setSelectedNoteId(newNote.id);

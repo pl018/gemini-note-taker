@@ -10,10 +10,11 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import ImprovementModal from './ImprovementModal';
 import SummarizeModal from './SummarizeModal';
 import BrainstormModal from './BrainstormModal';
+import TagManager from './TagManager';
 
 interface NoteEditorProps {
   note: Note;
-  onUpdateNote: (id: string, title: string, content: string) => void;
+  onUpdateNote: (id: string, title: string, content: string, tags?: string[]) => void;
   onDeleteNote: (id: string) => void;
   onAiAction: (action: AiAction, note: Note, options: { improvement?: ImprovementOptions, summarize?: SummarizeOptions, brainstorm?: BrainstormOptions }, saveAsNew: boolean) => void;
   isLoading: boolean;
@@ -102,6 +103,10 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote, onDeleteNot
   const handleConfirmImprovement = (options: ImprovementOptions, saveAsNew: boolean) => {
     setIsImproveModalOpen(false);
     onAiAction(AiAction.IMPROVE, { ...note, title, content }, { improvement: options }, saveAsNew);
+  };
+
+  const handleUpdateTags = (tags: string[]) => {
+    onUpdateNote(note.id, title, content, tags);
   };
 
   return (
@@ -197,6 +202,12 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote, onDeleteNot
         isOpen={isImproveModalOpen}
         onClose={() => setIsImproveModalOpen(false)}
         onConfirm={handleConfirmImprovement}
+      />
+      <TagManager 
+        note={note} 
+        onUpdateNote={(id, title, content, tags) => onUpdateNote(id, title, content, tags)} 
+        onAiAction={onAiAction} 
+        isLoading={isLoading} 
       />
       <SummarizeModal
         isOpen={isSummarizeModalOpen}

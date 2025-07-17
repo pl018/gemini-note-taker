@@ -29,7 +29,7 @@ const themes: Record<Theme, ThemeConfig> = {
       'text-secondary': '#AAAAAA',
     },
     gradients: {
-      download: 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(59, 130, 246, 0.9) 100%)',
+      background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(59, 130, 246, 0.9) 100%)',
     },
   },
   'indigo-purple': {
@@ -38,7 +38,7 @@ const themes: Record<Theme, ThemeConfig> = {
       secondary: '#2E3440',
       accent: '#9333EA',
       neutral: '#4C566A',
-      text: '#E5E9F0',
+      text: '#B0B8C4',
       'text-secondary': '#D8DEE9',
     },
     gradients: {

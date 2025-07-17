@@ -1,11 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 import { AiAction, ImprovementOptions, SummarizeOptions, BrainstormOptions } from '../types';
 
-if (!process.env.API_KEY) {
-  throw new Error("API_KEY environment variable is not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAi = () => {
+  const apiKey = localStorage.getItem('gemini_api_key') || process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("API key not found. Please set it in the settings.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 const getPromptForAction = (action: AiAction, text: string, options?: { improvement?: ImprovementOptions, summarize?: SummarizeOptions, brainstorm?: BrainstormOptions }): string => {
   switch (action) {
@@ -106,6 +108,8 @@ const getPromptForAction = (action: AiAction, text: string, options?: { improvem
 ${text}
 
 **Refined Prompt:**`;
+    case AiAction.AUTO_TAG:
+      return `Based on the following note content, suggest 3-5 relevant tags. Return them as a comma-separated list. For example: 'tag1, tag2, tag3'.\n\nContent:\n${text}`;
     default:
       throw new Error('Unknown AI action');
   }
@@ -114,6 +118,7 @@ ${text}
 export const improveCondition = async (condition: string): Promise<string> => {
   const prompt = getPromptForAction(AiAction.GENERATE_PROMPT, `Improve this brainstorming constraint: "${condition}"`);
   try {
+    const ai = getAi();
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-pro',
       contents: prompt,
@@ -121,6 +126,9 @@ export const improveCondition = async (condition: string): Promise<string> => {
     return response.text ?? '';
   } catch (error) {
     console.error(`Error during Gemini API call for improving condition:`, error);
+    if (error instanceof Error && error.message.includes("API key not found")) {
+        throw error;
+    }
     throw new Error('Failed to improve condition via Gemini API.');
   }
 };
@@ -128,6 +136,7 @@ export const improveCondition = async (condition: string): Promise<string> => {
 export const runAiAction = async (action: AiAction, text: string, options?: { improvement?: ImprovementOptions, summarize?: SummarizeOptions, brainstorm?: BrainstormOptions }): Promise<string> => {
   const prompt = getPromptForAction(action, text, options);
   try {
+    const ai = getAi();
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-pro',
       contents: prompt,
@@ -135,6 +144,9 @@ export const runAiAction = async (action: AiAction, text: string, options?: { im
     return response.text ?? '';
   } catch (error) {
     console.error(`Error during Gemini API call for action "${action}":`, error);
+    if (error instanceof Error && error.message.includes("API key not found")) {
+        throw error;
+    }
     throw new Error('Failed to generate content from Gemini API.');
   }
 };
