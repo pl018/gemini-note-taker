@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { Note, AiAction } from '../types';
 import { TagIcon } from './icons/TagIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
@@ -52,7 +53,7 @@ const TagManager: React.FC<TagManagerProps> = ({ note, onUpdateNote, onAiAction,
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-          className="flex-grow bg-background-secondary border border-secondary rounded-md px-3 py-2 text-body text-text focus:outline-none focus:ring-2 focus:ring-accent"
+          className="flex-grow bg-background-secondary border border-secondary rounded-md px-3 py-2 text-body text-black focus:outline-none focus:ring-2 focus:ring-accent"
           placeholder="Add a tag..."
         />
         <button onClick={handleAddTag} className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent-focus">Add</button>

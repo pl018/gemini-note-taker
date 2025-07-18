@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import * as React from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 export type Theme = 'charcoal-gold' | 'indigo-purple';
 
@@ -12,9 +13,10 @@ export interface ThemeConfig {
     'text-secondary': string;
   };
   gradients?: {
-    background: string;
-    button: string;
-    modal: string;
+    background?: string;
+    button?: string;
+    modal?: string;
+    download?: string;
   };
 }
 
@@ -28,9 +30,7 @@ const themes: Record<Theme, ThemeConfig> = {
       text: '#EAEAEA',
       'text-secondary': '#AAAAAA',
     },
-    gradients: {
-      background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(59, 130, 246, 0.9) 100%)',
-    },
+    gradients: {},
   },
   'indigo-purple': {
     colors: {
@@ -38,7 +38,7 @@ const themes: Record<Theme, ThemeConfig> = {
       secondary: '#2E3440',
       accent: '#9333EA',
       neutral: '#4C566A',
-      text: '#B0B8C4',
+      text: '#EAEAEA',
       'text-secondary': '#D8DEE9',
     },
     gradients: {
@@ -85,6 +85,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.style.removeProperty('--gradient-background');
       root.style.removeProperty('--gradient-button');
       root.style.removeProperty('--gradient-modal');
+      root.style.removeProperty('--gradient-download');
     }
   }, [theme, themeConfig]);
 

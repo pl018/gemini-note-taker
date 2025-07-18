@@ -39,3 +39,22 @@ export interface ImprovementOptions {
     tldr_top: boolean;
   };
 }
+
+export type Theme = 'charcoal-gold' | 'indigo-purple';
+
+export interface ThemeConfig {
+  colors: {
+    background: string;
+    secondary: string;
+    accent: string;
+    neutral: string;
+    text: string;
+    'text-secondary': string;
+  };
+  gradients?: {
+    background?: string;
+    button?: string;
+    modal?: string;
+    download?: string;
+  };
+}

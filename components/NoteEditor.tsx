@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import * as React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AiAction, Note, ImprovementOptions, SummarizeOptions, BrainstormOptions } from '../types';
 import { runAiAction } from '../services/geminiService';
 import { SaveIcon } from './icons/SaveIcon';
@@ -105,9 +106,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote, onDeleteNot
     onAiAction(AiAction.IMPROVE, { ...note, title, content }, { improvement: options }, saveAsNew);
   };
 
-  const handleUpdateTags = (tags: string[]) => {
-    onUpdateNote(note.id, title, content, tags);
-  };
+// Removed unused handleUpdateTags
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -119,15 +118,15 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote, onDeleteNot
           </div>
         </div>
       )}
-      <div className="p-4 border-b border-secondary flex justify-between items-center flex-shrink-0 bg-background">
+      <div className="p-6 border-b border-secondary/50 flex justify-between items-center flex-shrink-0 bg-background/50 backdrop-blur-sm">
         <input
           type="text"
           value={title}
           onChange={handleTitleChange}
-          className="text-h2 bg-transparent focus:outline-none focus:ring-2 focus:ring-accent text-text w-full placeholder-neutral"
+          className="text-h2 bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent text-text w-full placeholder-text-secondary mr-4 py-2 px-1 rounded-md transition-all duration-200"
           placeholder="Note Title"
         />
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3 flex-shrink-0">
            <button
             onClick={() => setIsSummarizeModalOpen(true)}
             disabled={isLoading || isListening}
@@ -190,11 +189,11 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote, onDeleteNot
           </button>
         </div>
       </div>
-      {error && <div className="p-4 bg-red-500/20 text-red-200 border-l-4 border-red-400 mx-4 my-2 rounded-md">{error}</div>}
+      {error && <div className="p-4 bg-red-500/20 text-red-200 border-l-4 border-red-400 mx-6 my-4 rounded-md">{error}</div>}
       <textarea
         value={content}
         onChange={handleContentChange}
-        className="flex-grow w-full p-6 bg-transparent text-text focus:outline-none resize-none text-body leading-relaxed placeholder-neutral"
+        className="flex-grow w-full p-6 bg-transparent text-text focus:outline-none resize-none text-body leading-relaxed placeholder-text-secondary"
         placeholder="Start writing your note here, or try dictating!"
       />
               <ImprovementModal
