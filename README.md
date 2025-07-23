@@ -6,6 +6,7 @@ A powerful, AI-enhanced note-taking application built with React, TypeScript, an
 
 ### 📝 Core Note-Taking
 - **Create and Edit Notes**: Rich text editing with real-time saving
+- **Markdown Preview**: Toggle between raw markdown and rendered view
 - **Organize with Tags**: Add and manage tags for better organization
 - **Search Functionality**: Search through notes by content or filter by tags
 - **Persistent Storage**: Notes are automatically saved to local storage

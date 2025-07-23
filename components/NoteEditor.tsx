@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { AiAction, Note, ImprovementOptions, SummarizeOptions, BrainstormOptions } from '../types';
 import { runAiAction } from '../services/geminiService';
 import { SaveIcon } from './icons/SaveIcon';
@@ -12,6 +12,7 @@ import ImprovementModal from './ImprovementModal';
 import SummarizeModal from './SummarizeModal';
 import BrainstormModal from './BrainstormModal';
 import TagManager from './TagManager';
+import { parseMarkdown } from '../utils/markdown';
 
 interface NoteEditorProps {
   note: Note;
@@ -35,6 +36,8 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote, onDeleteNot
   const [isImproveModalOpen, setIsImproveModalOpen] = useState(false);
   const [isSummarizeModalOpen, setIsSummarizeModalOpen] = useState(false);
   const [isBrainstormModalOpen, setBrainstormModalOpen] = useState(false);
+  const [viewRaw, setViewRaw] = useState(true);
+  const previewHtml = useMemo(() => parseMarkdown(content), [content]);
 
   const handleTranscriptResult = useCallback((transcript: string) => {
     setContent(prev => (prev ? prev + ' ' : '') + transcript);
@@ -154,7 +157,15 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote, onDeleteNot
             <LightBulbIcon className="w-4 h-4 text-accent" />
             <span>Brainstorm</span>
           </button>
-           <button
+          <button
+            onClick={() => setViewRaw(v => !v)}
+            disabled={isLoading || isListening}
+            className="flex items-center space-x-2 px-3 py-2 bg-secondary hover:bg-secondary/80 border border-secondary hover:border-neutral rounded-md text-caption text-text transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-accent"
+            title={viewRaw ? 'Show Preview' : 'Edit Markdown'}
+          >
+            <span>{viewRaw ? 'Preview' : 'Edit'}</span>
+          </button>
+          <button
             onClick={handleDictateClick}
             disabled={isLoading || !hasRecognitionSupport}
             className={`flex items-center space-x-2 px-3 py-2 rounded-md text-caption transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border focus:outline-none focus:ring-2 focus:ring-accent ${
@@ -190,12 +201,19 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote, onDeleteNot
         </div>
       </div>
       {error && <div className="p-4 bg-red-500/20 text-red-200 border-l-4 border-red-400 mx-6 my-4 rounded-md">{error}</div>}
-      <textarea
-        value={content}
-        onChange={handleContentChange}
-        className="flex-grow w-full p-6 bg-transparent text-text focus:outline-none resize-none text-body leading-relaxed placeholder-text-secondary"
-        placeholder="Start writing your note here, or try dictating!"
-      />
+      {viewRaw ? (
+        <textarea
+          value={content}
+          onChange={handleContentChange}
+          className="flex-grow w-full p-6 bg-transparent text-text focus:outline-none resize-none text-body leading-relaxed placeholder-text-secondary"
+          placeholder="Start writing your note here, or try dictating!"
+        />
+      ) : (
+        <div
+          className="markdown-preview flex-grow w-full p-6 overflow-y-auto text-text"
+          dangerouslySetInnerHTML={{ __html: previewHtml }}
+        />
+      )}
               <ImprovementModal
           onGeneratePrompt={handleGeneratePrompt}
         isOpen={isImproveModalOpen}
