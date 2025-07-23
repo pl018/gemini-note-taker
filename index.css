@@ -14,6 +14,10 @@
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
 }
+.markdown-preview h4 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
 .markdown-preview p {
   margin-bottom: 0.75rem;
 }
