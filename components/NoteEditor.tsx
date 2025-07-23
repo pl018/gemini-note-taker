@@ -12,7 +12,8 @@ import ImprovementModal from './ImprovementModal';
 import SummarizeModal from './SummarizeModal';
 import BrainstormModal from './BrainstormModal';
 import TagManager from './TagManager';
-import { parseMarkdown } from '../utils/markdown';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 
 interface NoteEditorProps {
   note: Note;
@@ -37,7 +38,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote, onDeleteNot
   const [isSummarizeModalOpen, setIsSummarizeModalOpen] = useState(false);
   const [isBrainstormModalOpen, setBrainstormModalOpen] = useState(false);
   const [viewRaw, setViewRaw] = useState(true);
-  const previewHtml = useMemo(() => parseMarkdown(content), [content]);
+  const previewHtml = useMemo(() => DOMPurify.sanitize(marked(content)), [content]);
 
   const handleTranscriptResult = useCallback((transcript: string) => {
     setContent(prev => (prev ? prev + ' ' : '') + transcript);
