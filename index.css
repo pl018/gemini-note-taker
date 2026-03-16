@@ -1,40 +1,163 @@
+/* Import neo-brutalist design system */
+@import './styles/neo-brutalist.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Global Reset ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Markdown Preview (Neo-Brutalist) ===== */
+.markdown-preview {
+  line-height: 1.6;
+}
+
 .markdown-preview h1 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--accent-primary);
 }
+
 .markdown-preview h2 {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  margin-top: 24px;
 }
+
 .markdown-preview h3 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+  margin-top: 20px;
 }
+
 .markdown-preview h4 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
 }
+
 .markdown-preview p {
-  margin-bottom: 0.75rem;
+  margin-bottom: 12px;
+  color: var(--text-primary);
 }
+
+.markdown-preview ul,
+.markdown-preview ol {
+  padding-left: 24px;
+  margin-bottom: 12px;
+}
+
 .markdown-preview ul {
   list-style-type: disc;
-  padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
 }
+
+.markdown-preview ol {
+  list-style-type: decimal;
+}
+
+.markdown-preview li {
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
 .markdown-preview code {
-  background-color: var(--color-secondary);
-  padding: 0.1rem 0.25rem;
-  border-radius: 0.25rem;
+  background-color: var(--bg-tertiary);
+  color: var(--accent-primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-family: monospace;
+  font-size: 13px;
+  border: 1px solid var(--border-primary);
 }
+
 .markdown-preview pre {
-  background-color: var(--color-secondary);
-  padding: 0.75rem;
+  background-color: var(--bg-tertiary);
+  padding: 16px;
   overflow-x: auto;
-  border-radius: 0.25rem;
-  margin-bottom: 0.75rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-hard);
+}
+
+.markdown-preview pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-primary);
+}
+
+.markdown-preview blockquote {
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 16px;
+  margin-left: 0;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.markdown-preview a {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+.markdown-preview a:hover {
+  color: var(--accent-hover);
+}
+
+.markdown-preview hr {
+  border: none;
+  height: 1px;
+  background: var(--border-primary);
+  margin: 24px 0;
+}
+
+.markdown-preview strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.markdown-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-primary);
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  padding: 8px 12px;
+  border: 1px solid var(--border-primary);
+  text-align: left;
+}
+
+.markdown-preview th {
+  background: var(--bg-tertiary);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
 }

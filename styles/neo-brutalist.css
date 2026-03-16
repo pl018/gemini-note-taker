@@ -1,0 +1,302 @@
+/* Neo-Brutalist Design System
+ * Based on system.md reference
+ * Aesthetic: Dark mode, hard shadows, uppercase labels, 1px borders
+ */
+
+:root {
+  /* Background */
+  --bg-primary: #09090b;
+  --bg-secondary: #18181b;
+  --bg-tertiary: #27272a;
+
+  /* Text */
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+
+  /* Borders */
+  --border-primary: #27272a;
+  --border-secondary: #3f3f46;
+
+  /* Accent */
+  --accent-primary: #ccff00;
+  --accent-hover: #b3e600;
+  --accent-fg: #000000;
+
+  /* Shadows */
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-lg: rgba(0, 0, 0, 0.5);
+  --shadow-hard: 3px 3px 0 0 #27272a;
+
+  /* Radius */
+  --radius: 8px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+
+  /* Category Colors */
+  --cat-action: #f59e0b;
+  --cat-spec: #3b82f6;
+  --cat-architecture: #8b5cf6;
+  --cat-ops: #06b6d4;
+  --cat-tooling: #10b981;
+  --cat-debug: #ef4444;
+  --cat-research: #ec4899;
+  --cat-reference: #6366f1;
+  --cat-meeting: #14b8a6;
+  --cat-idea: #a855f7;
+}
+
+/* ===== BASE COMPONENT CLASSES ===== */
+
+/* Button - Neo Brutalist */
+.btn-neo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.btn-neo:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+}
+
+.btn-neo:active {
+  transform: translate(2px, 2px);
+}
+
+.btn-neo:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.btn-neo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Button Variants */
+.btn-neo-accent {
+  background: var(--accent-primary);
+  color: var(--accent-fg);
+  border-color: var(--accent-primary);
+  font-weight: 700;
+}
+
+.btn-neo-accent:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-neo-danger {
+  background: color-mix(in srgb, #ef4444 15%, var(--bg-secondary));
+  border-color: color-mix(in srgb, #ef4444 30%, var(--border-primary));
+  color: #fca5a5;
+}
+
+.btn-neo-danger:hover {
+  background: color-mix(in srgb, #ef4444 25%, var(--bg-secondary));
+  border-color: #ef4444;
+}
+
+.btn-neo-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.btn-neo-ghost:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+/* Compact button */
+.btn-neo-sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 11px;
+}
+
+/* Icon-only button */
+.btn-neo-icon {
+  width: 40px;
+  padding: 0;
+}
+
+.btn-neo-icon.btn-neo-sm {
+  width: 32px;
+}
+
+/* Input - Neo Brutalist */
+.input-neo {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 400;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input-neo::placeholder {
+  color: var(--text-tertiary);
+}
+
+.input-neo:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+/* Textarea - Neo Brutalist */
+.textarea-neo {
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.textarea-neo::placeholder {
+  color: var(--text-tertiary);
+}
+
+.textarea-neo:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+/* Card - Neo Brutalist */
+.card-neo {
+  padding: 20px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-hard);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+/* Modal Content */
+.modal-neo {
+  max-height: 90vh;
+  padding: 24px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+}
+
+/* ===== TYPOGRAPHY ===== */
+
+.text-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
+}
+
+.text-label-emphasis {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+/* ===== UTILITY PATTERNS ===== */
+
+/* Tag/Badge chip */
+.chip-neo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Category indicator dot */
+.cat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Scrollbar styling */
+.neo-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.neo-scrollbar::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+.neo-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+  border-radius: 3px;
+}
+
+.neo-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Divider */
+.divider-neo {
+  height: 1px;
+  background: var(--border-primary);
+  border: none;
+}
+
+/* ===== ANIMATIONS ===== */
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

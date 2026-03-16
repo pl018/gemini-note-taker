@@ -1,211 +1,182 @@
 import * as React from 'react';
-import { useState, useEffect, useCallback } from 'react';
-import { Note, AiAction, ImprovementOptions, SummarizeOptions, BrainstormOptions } from './types';
-import Header from './components/Header';
-import NoteList from './components/NoteList';
+import { CATEGORIES, Category } from './types';
+import SidebarHeader from './components/Sidebar/SidebarHeader';
+import SearchBar from './components/Sidebar/SearchBar';
+import CategoryGroup from './components/Sidebar/CategoryGroup';
+import SessionCard from './components/Sidebar/SessionCard';
+import ArchiveToggle from './components/Sidebar/ArchiveToggle';
 import NoteEditor from './components/NoteEditor';
-import { runAiAction } from './services/geminiService';
-import { useTheme } from './contexts/ThemeContext';
+import { useSession } from './contexts/SessionContext';
 
 const App: React.FC = () => {
-  const { theme } = useTheme();
-  const [notes, setNotes] = useState<Note[]>(() => {
-    const savedNotes = localStorage.getItem('gemini-notes');
-    if (savedNotes) {
-      const parsedNotes = JSON.parse(savedNotes);
-      return parsedNotes.map((note: Note) => ({...note, tags: note.tags || []}));
-    }
-    return [
-      {
-        id: crypto.randomUUID(),
-        title: 'Welcome to Gemini Notes!',
-        content: 'This is a powerful note-taking app enhanced with AI. Try selecting this note, or create a new one. Use the AI tools in the editor to summarize, improve your writing, or brainstorm ideas.',
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: crypto.randomUUID(),
-        title: 'Meeting Agenda',
-        content: '- Discuss Q3 sales performance\n- Review marketing campaign results\n- Plan for the upcoming product launch\n- Brainstorm new features for v2.0',
-        createdAt: new Date().toISOString(),
-      },
-    ];
-  });
+  const {
+    sessions,
+    selectedSessionId,
+    isLoading,
+    error,
+    viewMode,
+    createSession,
+    selectSession,
+    updateSession,
+    deleteSession,
+    togglePin,
+    setCategory,
+    archiveSession,
+    unarchiveSession,
+    handleAiAction,
+    search,
+    setSearch,
+    searchByTag,
+    setSearchByTag,
+    filteredSessions,
+    selectedSession,
+    getSessionsByCategory,
+    getPinnedSessions,
+    setViewMode,
+  } = useSession();
 
-  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(notes.length > 0 ? notes[0].id : null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [searchByTag, setSearchByTag] = useState(false);
+  const activeCount = sessions.filter(s => s.status === 'active').length;
+  const archivedCount = sessions.filter(s => s.status === 'archived').length;
+  const pinnedSessions = getPinnedSessions();
 
-  useEffect(() => {
-    localStorage.setItem('gemini-notes', JSON.stringify(notes));
-  }, [notes]);
-
-  const handleNewNote = () => {
-    const newNote: Note = {
-      id: crypto.randomUUID(),
-      title: 'Untitled Note',
-      content: '',
-      createdAt: new Date().toISOString(),
-      tags: [],
-    };
-    setNotes(prevNotes => [newNote, ...prevNotes]);
-    setSelectedNoteId(newNote.id);
-    setError(null);
-  };
-
-  const handleSelectNote = (id: string) => {
-    setSelectedNoteId(id);
-    setError(null);
-  };
-
-  const handleUpdateNote = (id: string, title: string, content: string, tags?: string[]) => {
-    setNotes(prevNotes =>
-      prevNotes.map(note =>
-        note.id === id ? { ...note, title, content, tags: tags ?? note.tags } : note
-      )
-    );
-    setError(null);
-  };
-
-  const handleDeleteNote = (id: string) => {
-    setNotes(prevNotes => {
-      const remainingNotes = prevNotes.filter(note => note.id !== id);
-      if (selectedNoteId === id) {
-        setSelectedNoteId(remainingNotes.length > 0 ? remainingNotes[0].id : null);
-      }
-      return remainingNotes;
-    });
-    setError(null);
-  };
-  
-  const handleAiAction = useCallback(async (action: AiAction, note: Note, options: { improvement?: ImprovementOptions, summarize?: SummarizeOptions, brainstorm?: BrainstormOptions }, saveAsNew: boolean) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const textToProcess = action === AiAction.BRAINSTORM ? note.title : note.content;
-      if (action === AiAction.AUTO_TAG) {
-        const result = await runAiAction(action, note.content, {});
-        const tags = result.split(',').map(tag => tag.trim()).filter(Boolean);
-        setNotes(prevNotes =>
-          prevNotes.map(n => 
-            n.id === note.id ? { ...n, tags: [...new Set([...n.tags, ...tags])] } : n
-          )
-        );
-        setIsLoading(false);
-        return;
-      }
-      if (!textToProcess.trim()) {
-        setError(action === AiAction.BRAINSTORM ? 'Please provide a title to brainstorm ideas.' : 'Please provide some content to process.');
-        setIsLoading(false);
-        return;
-      }
-      
-      const result = await runAiAction(action, textToProcess, options);
-
-      if (saveAsNew) {
-        const newNote: Note = {
-          id: crypto.randomUUID(),
-          title: `${note.title} (AI-Generated)`,
-          content: result,
-          createdAt: new Date().toISOString(),
-          tags: note.tags || [],
-        };
-        setNotes(prevNotes => [newNote, ...prevNotes]);
-        setSelectedNoteId(newNote.id);
-      } else {
-        setNotes(prevNotes =>
-          prevNotes.map(n => {
-            if (n.id === note.id) {
-              if (action === AiAction.SUMMARIZE && options?.summarize && !options.summarize.overwrite) {
-                return { ...n, content: result + '\n\n' + n.content };
-              }
-              return { ...n, content: result };
-            }
-            return n;
-          })
-        );
-      }
-    } catch (err) {
-      console.error('AI Action Failed:', err);
-      setError('Failed to perform AI action. Please check your API key and try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const selectedNote = notes.find(note => note.id === selectedNoteId);
-
-  const filteredNotes = notes.filter(note =>
-    searchByTag
-      ? (note.tags || []).some(tag => tag.toLowerCase().includes(search.toLowerCase()))
-      : note.title.toLowerCase().includes(search.toLowerCase()) ||
-        note.content.toLowerCase().includes(search.toLowerCase())
-  );
+  // Categories that have sessions
+  const categoriesWithSessions = CATEGORIES.filter(cat => getSessionsByCategory(cat).length > 0);
 
   return (
-    <div 
-      className="flex h-screen font-sans bg-background"
-      style={{
-        background: theme === 'indigo-purple' ? 'var(--gradient-background)' : undefined
-      }}
-    >
-      <div className="w-1/4 max-w-sm flex flex-col bg-background/80 backdrop-blur-sm border-r border-secondary">
-        <Header onNewNote={handleNewNote} />
-        <div className="p-4 border-b border-secondary/50">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search notes..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full p-3 pl-10 rounded-md border border-secondary/60 bg-background/50 backdrop-blur-sm text-black placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all duration-200 hover:border-secondary"
+    <div style={{
+      display: 'flex',
+      height: '100vh',
+      fontFamily: "'Inter', sans-serif",
+      background: 'var(--bg-primary)',
+      color: 'var(--text-primary)',
+    }}>
+      {/* Sidebar */}
+      <div style={{
+        width: '280px',
+        minWidth: '280px',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--bg-primary)',
+        borderRight: '1px solid var(--border-primary)',
+      }}>
+        <SidebarHeader onNewNote={() => createSession()} />
+        <SearchBar
+          search={search}
+          onSearchChange={setSearch}
+          searchByTag={searchByTag}
+          onSearchByTagChange={setSearchByTag}
+        />
+
+        {/* Session list */}
+        <div className="neo-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
+          {/* Pinned section */}
+          {pinnedSessions.length > 0 && (
+            <div style={{ marginBottom: '4px' }}>
+              <div style={{
+                padding: '6px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}>
+                <svg style={{ width: '10px', height: '10px', color: 'var(--accent-primary)' }} viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
+                </svg>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  color: 'var(--accent-primary)',
+                }}>
+                  Pinned
+                </span>
+              </div>
+              <div style={{ padding: '0 4px' }}>
+                {pinnedSessions.map(session => (
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    isSelected={selectedSessionId === session.id}
+                    onSelect={selectSession}
+                    onTogglePin={togglePin}
+                    showCategory={true}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Category groups */}
+          {categoriesWithSessions.map(category => (
+            <CategoryGroup
+              key={category}
+              category={category}
+              sessions={getSessionsByCategory(category)}
+              selectedSessionId={selectedSessionId}
+              onSelectSession={selectSession}
+              onTogglePin={togglePin}
             />
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <label className="flex items-center mt-3 text-sm text-text-secondary cursor-pointer hover:text-text transition-colors duration-200">
-            <input
-              type="checkbox"
-              checked={searchByTag}
-              onChange={e => setSearchByTag(e.target.checked)}
-              className="mr-3 w-4 h-4 text-accent bg-background border-secondary rounded focus:ring-accent focus:ring-2 focus:ring-offset-0"
-            />
-            Search by tag only
-          </label>
+          ))}
+
+          {/* Empty state */}
+          {filteredSessions.length === 0 && (
+            <div style={{
+              padding: '24px 16px',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                {search ? 'No sessions match your search' : viewMode === 'archived' ? 'No archived sessions' : 'No active sessions'}
+              </p>
+            </div>
+          )}
         </div>
-        <NoteList
-          notes={filteredNotes}
-          selectedNoteId={selectedNoteId}
-          onSelectNote={handleSelectNote}
+
+        {/* Archive toggle */}
+        <ArchiveToggle
+          viewMode={viewMode}
+          onToggle={setViewMode}
+          activeCount={activeCount}
+          archivedCount={archivedCount}
         />
       </div>
-      <main className="w-3/4 flex flex-col bg-transparent">
-        {selectedNote ? (
+
+      {/* Main Workspace */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {selectedSession ? (
           <NoteEditor
-            key={selectedNote.id}
-            note={selectedNote}
-            onUpdateNote={handleUpdateNote}
-            onDeleteNote={handleDeleteNote}
+            key={selectedSession.id}
+            note={selectedSession}
+            onUpdateNote={(id, title, content, tags) => {
+              updateSession(id, { title, content, ...(tags ? { tags } : {}) });
+            }}
+            onDeleteNote={deleteSession}
             onAiAction={handleAiAction}
             isLoading={isLoading}
             error={error}
+            onCategoryChange={(cat) => setCategory(selectedSession.id, cat)}
+            onArchive={() => archiveSession(selectedSession.id)}
+            onUnarchive={() => unarchiveSession(selectedSession.id)}
+            onTogglePin={() => togglePin(selectedSession.id)}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-text-secondary p-8">
-            <div className="bg-background/30 backdrop-blur-sm border border-secondary/50 rounded-lg p-8 text-center max-w-md">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-6 mx-auto text-accent/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            padding: '32px',
+          }}>
+            <div className="card-neo" style={{ textAlign: 'center', maxWidth: '400px' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" style={{ width: '48px', height: '48px', color: 'var(--accent-primary)', opacity: 0.6, margin: '0 auto 16px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <h2 className="text-h3 text-text mb-3">Select a note or create a new one</h2>
-              <p className="text-body text-text-secondary leading-relaxed">Your creative space awaits. Start by selecting an existing note or create a new one to begin writing.</p>
+              <h2 style={{ fontSize: '16px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-primary)', marginBottom: '8px' }}>
+                No session selected
+              </h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                Select an existing session or create a new one to begin working.
+              </p>
             </div>
           </div>
         )}

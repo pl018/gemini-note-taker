@@ -4,6 +4,7 @@ import './index.css';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { SessionProvider } from './contexts/SessionContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -14,7 +15,9 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ThemeProvider>
-      <App />
+      <SessionProvider>
+        <App />
+      </SessionProvider>
     </ThemeProvider>
   </React.StrictMode>
 );
