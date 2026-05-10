@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ImprovementOptions } from '../types';
 import { SparklesIcon } from './icons/SparklesIcon';
-import { useTheme } from '../contexts/ThemeContext';
+import BaseModal from './Modals/BaseModal';
 
 const audienceOptions = [
   { value: 'auto', label: 'Let AI Decide' },
@@ -26,12 +26,12 @@ const lengthOptions = [
 ];
 
 const enhancementOptions = [
-  { id: 'fix_grammar', label: 'Fix Grammar & Spelling' },
-  { id: 'clarity', label: 'Improve Clarity / Flow' },
-  { id: 'simplify', label: 'Simplify Sentences' },
-  { id: 'lists', label: 'Use Bullet Points' },
+  { id: 'fix_grammar', label: 'Fix Grammar' },
+  { id: 'clarity', label: 'Improve Clarity' },
+  { id: 'simplify', label: 'Simplify' },
+  { id: 'lists', label: 'Bullet Points' },
   { id: 'subheads', label: 'Add Headings' },
-  { id: 'tldr_top', label: 'Add TL;DR Summary' },
+  { id: 'tldr_top', label: 'Add TL;DR' },
 ];
 
 const initialSelections: ImprovementOptions = {
@@ -57,7 +57,6 @@ interface ImprovementModalProps {
 }
 
 const ImprovementModal: React.FC<ImprovementModalProps> = ({ isOpen, onClose, onConfirm, onGeneratePrompt }) => {
-  const { theme } = useTheme();
   const [selections, setSelections] = useState<ImprovementOptions>(initialSelections);
   const [saveAsNew, setSaveAsNew] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -68,10 +67,6 @@ const ImprovementModal: React.FC<ImprovementModalProps> = ({ isOpen, onClose, on
       setSaveAsNew(false);
     }
   }, [isOpen]);
-
-  if (!isOpen) {
-    return null;
-  }
 
   const handleConfirm = () => {
     onConfirm(selections, saveAsNew);
@@ -89,11 +84,11 @@ const ImprovementModal: React.FC<ImprovementModalProps> = ({ isOpen, onClose, on
       setIsGenerating(false);
     }
   };
-  
+
   const handleRadioChange = (category: 'audience' | 'tone' | 'length', value: string) => {
     setSelections(prev => ({ ...prev, [category]: value as any }));
   };
-  
+
   const handleCheckboxChange = (id: string) => {
     setSelections(prev => ({
       ...prev,
@@ -103,155 +98,204 @@ const ImprovementModal: React.FC<ImprovementModalProps> = ({ isOpen, onClose, on
       }
     }));
   };
-  
+
   const RadioOption = ({ group, value, label }: {group: 'audience' | 'tone' | 'length', value: string, label: string}) => {
     const isChecked = selections[group] === value;
     return (
-      <label className={`flex items-center space-x-3 cursor-pointer p-3 rounded-md border transition-all duration-200 ${
-        isChecked 
-          ? 'bg-accent/20 border-accent text-text' 
-          : 'bg-secondary/50 border-secondary hover:bg-secondary/70 text-text-secondary'
-      }`}>
-        <input type="radio" name={group} value={value} checked={isChecked} onChange={() => handleRadioChange(group, value)} className="hidden" />
-        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-          isChecked ? 'border-accent bg-accent' : 'border-neutral'
-        }`}>
-          {isChecked && <div className="w-1.5 h-1.5 rounded-full bg-background"></div>}
+      <label style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '8px 12px',
+        borderRadius: 'var(--radius-sm)',
+        border: `1px solid ${isChecked ? 'var(--accent-primary)' : 'var(--border-primary)'}`,
+        background: isChecked
+          ? 'color-mix(in srgb, var(--accent-primary) 10%, var(--bg-tertiary))'
+          : 'var(--bg-tertiary)',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease-in-out',
+        fontSize: '11px',
+        fontWeight: 600,
+        textTransform: 'uppercase' as const,
+        letterSpacing: '0.03em',
+        color: isChecked ? 'var(--accent-primary)' : 'var(--text-secondary)',
+      }}>
+        <input type="radio" name={group} value={value} checked={isChecked} onChange={() => handleRadioChange(group, value)} style={{ display: 'none' }} />
+        <div style={{
+          width: '12px',
+          height: '12px',
+          borderRadius: '50%',
+          border: `2px solid ${isChecked ? 'var(--accent-primary)' : 'var(--border-secondary)'}`,
+          background: isChecked ? 'var(--accent-primary)' : 'transparent',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          {isChecked && <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--accent-fg)' }} />}
         </div>
-        <span className="text-caption">{label}</span>
+        <span>{label}</span>
       </label>
-    )
-  }
+    );
+  };
 
   const CheckboxOption = ({ id, label }: {id: string, label: string}) => {
     const isChecked = selections.enhancements[id as keyof typeof selections.enhancements];
-     return (
-        <label className={`flex items-center space-x-3 cursor-pointer p-3 rounded-md border transition-all duration-200 ${
-          isChecked 
-            ? 'bg-accent/20 border-accent text-text' 
-            : 'bg-secondary/50 border-secondary hover:bg-secondary/70 text-text-secondary'
-        }`}>
-            <input
-              type="checkbox"
-              checked={isChecked}
-              onChange={() => handleCheckboxChange(id)}
-              className="hidden"
-            />
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 ${
-              isChecked ? 'border-accent bg-accent' : 'border-neutral'
-            }`}>
-              {isChecked && <svg className="w-2.5 h-2.5 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
-            </div>
-            <span className="text-caption select-none">{label}</span>
-        </label>
-     )
-  }
+    return (
+      <label style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '8px 12px',
+        borderRadius: 'var(--radius-sm)',
+        border: `1px solid ${isChecked ? 'var(--accent-primary)' : 'var(--border-primary)'}`,
+        background: isChecked
+          ? 'color-mix(in srgb, var(--accent-primary) 10%, var(--bg-tertiary))'
+          : 'var(--bg-tertiary)',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease-in-out',
+        fontSize: '11px',
+        fontWeight: 600,
+        textTransform: 'uppercase' as const,
+        letterSpacing: '0.03em',
+        color: isChecked ? 'var(--accent-primary)' : 'var(--text-secondary)',
+      }}>
+        <input type="checkbox" checked={isChecked} onChange={() => handleCheckboxChange(id)} style={{ display: 'none' }} />
+        <div style={{
+          width: '12px',
+          height: '12px',
+          borderRadius: '2px',
+          border: `2px solid ${isChecked ? 'var(--accent-primary)' : 'var(--border-secondary)'}`,
+          background: isChecked ? 'var(--accent-primary)' : 'transparent',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          {isChecked && <svg style={{ width: '8px', height: '8px', color: 'var(--accent-fg)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
+        </div>
+        <span>{label}</span>
+      </label>
+    );
+  };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center z-50 transition-opacity" aria-modal="true" role="dialog">
-      <div 
-        className="border border-secondary rounded-lg shadow-2xl p-8 max-w-3xl w-full transform transition-all m-4"
-        style={{
-          background: theme === 'indigo-purple' ? 'var(--gradient-modal)' : undefined,
-          backdropFilter: theme === 'indigo-purple' ? 'blur(20px)' : undefined
-        }}
-      >
-        <h2 className="text-h2 text-text mb-2">Improve Writing</h2>
-        <p className="text-body text-text-secondary mb-6">Customize how the AI will refine your text.</p>
+    <BaseModal isOpen={isOpen} onClose={onClose} title="Improve Writing" description="Customize how the AI will refine your text." maxWidth="720px">
+      {/* Options grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px' }}>
+        <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+          <legend className="text-label" style={{ marginBottom: '8px', display: 'block' }}>Audience</legend>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {audienceOptions.map(opt => <RadioOption key={opt.value} group="audience" {...opt} />)}
+          </div>
+        </fieldset>
+        <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+          <legend className="text-label" style={{ marginBottom: '8px', display: 'block' }}>Tone</legend>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {toneOptions.map(opt => <RadioOption key={opt.value} group="tone" {...opt} />)}
+          </div>
+        </fieldset>
+        <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+          <legend className="text-label" style={{ marginBottom: '8px', display: 'block' }}>Length</legend>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {lengthOptions.map(opt => <RadioOption key={opt.value} group="length" {...opt} />)}
+          </div>
+        </fieldset>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <fieldset>
-            <legend className="text-h4 text-text mb-3">Audience</legend>
-            <div className="space-y-2">
-              {audienceOptions.map(opt => <RadioOption key={opt.value} group="audience" {...opt} />)}
-            </div>
-          </fieldset>
-           <fieldset>
-            <legend className="text-h4 text-text mb-3">Tone</legend>
-            <div className="space-y-2">
-              {toneOptions.map(opt => <RadioOption key={opt.value} group="tone" {...opt} />)}
-            </div>
-          </fieldset>
-           <fieldset>
-            <legend className="text-h4 text-text mb-3">Length</legend>
-            <div className="space-y-2">
-              {lengthOptions.map(opt => <RadioOption key={opt.value} group="length" {...opt} />)}
-            </div>
-          </fieldset>
+      {/* Enhancements */}
+      <fieldset style={{ border: 'none', padding: 0, margin: 0, marginBottom: '20px' }}>
+        <legend className="text-label" style={{ marginBottom: '8px', display: 'block' }}>Enhancements</legend>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' }}>
+          {enhancementOptions.map(opt => <CheckboxOption key={opt.id} {...opt} />)}
         </div>
+      </fieldset>
 
-        <fieldset>
-          <legend className="text-h4 text-text mb-3">Enhancements</legend>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {enhancementOptions.map(opt => <CheckboxOption key={opt.id} {...opt} />)}
-          </div>
-        </fieldset>
-
-        <fieldset className="mt-6">
-          <legend className="text-h4 text-text mb-3">Custom Instructions</legend>
-          <div className="relative">
-            <textarea
-              value={selections.customInstructions}
-              onChange={(e) => setSelections(prev => ({ ...prev, customInstructions: e.target.value }))}
-              placeholder="e.g., 'Translate to French', 'Make it sound more poetic', 'Explain this to a 5-year-old'"
-              className="w-full bg-background border border-secondary rounded-md p-3 text-text focus:ring-2 focus:ring-accent focus:border-accent transition-colors h-28 resize-none placeholder-neutral"
-              disabled={isGenerating}
-            />
-            {isGenerating && (
-              <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-md">
-                  <div className="w-8 h-8 border-4 border-t-accent border-r-accent/30 border-b-accent/30 border-l-accent/30 rounded-full animate-spin"></div>
-              </div>
-            )}
-          </div>
-          <div className="mt-2 flex justify-end">
-            <button 
-              onClick={handleAutoGenerate}
-              disabled={!selections.customInstructions || isGenerating}
-              className="flex items-center gap-2 text-caption text-accent hover:text-accent/80 disabled:text-neutral disabled:cursor-not-allowed transition-colors"
-            >
-              <SparklesIcon className="w-4 h-4" />
-              <span>Auto-Generate Prompt</span>
-            </button>
-          </div>
-        </fieldset>
-
-        <div className="mt-8 flex justify-between items-center">
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={saveAsNew}
-              onChange={(e) => setSaveAsNew(e.target.checked)}
-              className="hidden"
-            />
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 ${
-              saveAsNew ? 'border-accent bg-accent' : 'border-neutral'
-            }`}>
-              {saveAsNew && <svg className="w-2.5 h-2.5 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
+      {/* Custom instructions */}
+      <fieldset style={{ border: 'none', padding: 0, margin: 0, marginBottom: '20px' }}>
+        <legend className="text-label" style={{ marginBottom: '8px', display: 'block' }}>Custom Instructions</legend>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            value={selections.customInstructions}
+            onChange={(e) => setSelections(prev => ({ ...prev, customInstructions: e.target.value }))}
+            placeholder="e.g., 'Translate to French', 'Make it sound more poetic'"
+            className="textarea-neo w-full"
+            style={{ minHeight: '80px' }}
+            disabled={isGenerating}
+          />
+          {isGenerating && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(9, 9, 11, 0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 'var(--radius-md)',
+            }}>
+              <div style={{ width: '24px', height: '24px', border: '3px solid var(--border-secondary)', borderTopColor: 'var(--accent-primary)', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
             </div>
-            <span className={`text-caption select-none ${saveAsNew ? 'text-text' : 'text-text-secondary'}`}>Save as New Note</span>
-          </label>
-          <div className="flex space-x-4">
+          )}
+        </div>
+        <div style={{ marginTop: '6px', display: 'flex', justifyContent: 'flex-end' }}>
           <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-2 rounded-md text-caption bg-secondary hover:bg-secondary/80 border border-secondary text-text transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            className="px-6 py-2 rounded-md text-caption text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+            onClick={handleAutoGenerate}
+            disabled={!selections.customInstructions || isGenerating}
             style={{
-              background: theme === 'indigo-purple' ? 'var(--gradient-button)' : undefined
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.03em',
+              color: selections.customInstructions && !isGenerating ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+              padding: '4px',
             }}
           >
-            Improve Text
+            <SparklesIcon className="w-3.5 h-3.5" />
+            <span>Auto-Generate</span>
           </button>
         </div>
+      </fieldset>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          fontSize: '11px',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.03em',
+          color: saveAsNew ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+        }}>
+          <input type="checkbox" checked={saveAsNew} onChange={(e) => setSaveAsNew(e.target.checked)} style={{ display: 'none' }} />
+          <div style={{
+            width: '12px',
+            height: '12px',
+            borderRadius: '2px',
+            border: `2px solid ${saveAsNew ? 'var(--accent-primary)' : 'var(--border-secondary)'}`,
+            background: saveAsNew ? 'var(--accent-primary)' : 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            {saveAsNew && <svg style={{ width: '8px', height: '8px', color: 'var(--accent-fg)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
+          </div>
+          Save as New
+        </label>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn-neo" onClick={onClose}>Cancel</button>
+          <button className="btn-neo btn-neo-accent" onClick={handleConfirm}>Improve</button>
+        </div>
       </div>
-    </div>
-    </div>
+    </BaseModal>
   );
 };
 

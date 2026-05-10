@@ -1,10 +1,52 @@
-export interface Note {
+// ===== Session Model =====
+
+export type Category = 'action' | 'spec' | 'architecture' | 'ops' | 'tooling' | 'debug' | 'research' | 'reference' | 'meeting' | 'idea';
+
+export const CATEGORIES: Category[] = ['action', 'spec', 'architecture', 'ops', 'tooling', 'debug', 'research', 'reference', 'meeting', 'idea'];
+
+export const CATEGORY_COLORS: Record<Category, string> = {
+  action: '#f59e0b',
+  spec: '#3b82f6',
+  architecture: '#8b5cf6',
+  ops: '#06b6d4',
+  tooling: '#10b981',
+  debug: '#ef4444',
+  research: '#ec4899',
+  reference: '#6366f1',
+  meeting: '#14b8a6',
+  idea: '#a855f7',
+};
+
+export const CATEGORY_LABELS: Record<Category, string> = {
+  action: 'Action',
+  spec: 'Spec',
+  architecture: 'Architecture',
+  ops: 'Ops',
+  tooling: 'Tooling',
+  debug: 'Debug',
+  research: 'Research',
+  reference: 'Reference',
+  meeting: 'Meeting',
+  idea: 'Idea',
+};
+
+export interface Session {
   id: string;
   title: string;
   content: string;
+  category: Category;
+  status: 'active' | 'archived';
+  pinned: boolean;
   tags: string[];
+  references: string[];
   createdAt: string;
+  updatedAt: string;
 }
+
+// Backwards-compatible alias for components that still use Note
+export type Note = Session;
+
+// ===== AI Types =====
 
 export enum AiAction {
   GENERATE_PROMPT = 'generate_prompt',
@@ -37,24 +79,5 @@ export interface ImprovementOptions {
     lists: boolean;
     subheads: boolean;
     tldr_top: boolean;
-  };
-}
-
-export type Theme = 'charcoal-gold' | 'indigo-purple';
-
-export interface ThemeConfig {
-  colors: {
-    background: string;
-    secondary: string;
-    accent: string;
-    neutral: string;
-    text: string;
-    'text-secondary': string;
-  };
-  gradients?: {
-    background?: string;
-    button?: string;
-    modal?: string;
-    download?: string;
   };
 }

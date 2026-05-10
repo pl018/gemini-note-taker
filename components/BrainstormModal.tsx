@@ -4,7 +4,7 @@ import { PlusIcon } from './icons/PlusIcon';
 import { TrashIcon } from './icons/TrashIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { improveCondition } from '../services/geminiService';
-import { useTheme } from '../contexts/ThemeContext';
+import BaseModal from './Modals/BaseModal';
 
 const creativityLevels = [
   { value: 1, label: 'Focused' },
@@ -26,7 +26,6 @@ interface BrainstormModalProps {
 }
 
 const BrainstormModal: React.FC<BrainstormModalProps> = ({ isOpen, onClose, onConfirm }) => {
-  const { theme } = useTheme();
   const [options, setOptions] = useState<BrainstormOptions>(initialOptions);
   const [saveAsNew, setSaveAsNew] = useState(false);
   const [improvingIndex, setImprovingIndex] = useState<number | null>(null);
@@ -37,10 +36,6 @@ const BrainstormModal: React.FC<BrainstormModalProps> = ({ isOpen, onClose, onCo
       setSaveAsNew(false);
     }
   }, [isOpen]);
-
-  if (!isOpen) {
-    return null;
-  }
 
   const handleConfirm = () => {
     onConfirm(options, saveAsNew);
@@ -67,129 +62,152 @@ const BrainstormModal: React.FC<BrainstormModalProps> = ({ isOpen, onClose, onCo
       handleConditionChange(index, improved);
     } catch (error) {
       console.error('Failed to improve condition:', error);
-      // Optionally, show an error to the user
     } finally {
       setImprovingIndex(null);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center z-50 transition-opacity" aria-modal="true" role="dialog">
-      <div 
-        className="border border-secondary rounded-lg shadow-2xl p-8 max-w-2xl w-full transform transition-all m-4"
-        style={{
-          background: theme === 'indigo-purple' ? 'var(--gradient-modal)' : undefined,
-          backdropFilter: theme === 'indigo-purple' ? 'blur(20px)' : undefined
-        }}
-      >
-        <h2 className="text-h2 text-text mb-2">Advanced Brainstorming</h2>
-        <p className="text-body text-text-secondary mb-6">Fine-tune the AI's creative process to get the best ideas.</p>
-
-        <div className="space-y-6">
-          <fieldset>
-            <legend className="text-h4 text-text mb-3">Creativity Level</legend>
-            <div className="relative pt-2">
-              <input
-                type="range"
-                min="1"
-                max="4"
-                step="1"
-                value={options.creativity}
-                onChange={(e) => setOptions(prev => ({ ...prev, creativity: parseInt(e.target.value, 10) }))}
-                className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
-              />
-              <div className="flex justify-between text-caption text-text-secondary mt-2">
-                {creativityLevels.map(level => <span key={level.value}>{level.label}</span>)}
-              </div>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend className="text-h4 text-text mb-3">Keywords & Prompts</legend>
-            <textarea
-              value={options.keywords}
-              onChange={(e) => setOptions(prev => ({ ...prev, keywords: e.target.value }))}
-              placeholder="e.g., 'marketing strategies for a new coffee shop', 'plot ideas for a sci-fi novel'"
-              className="w-full bg-background border border-secondary rounded-md p-3 text-text focus:ring-2 focus:ring-accent focus:border-accent transition-colors h-24 resize-none placeholder-neutral"
-            />
-          </fieldset>
-
-          <fieldset>
-            <div className="flex justify-between items-center mb-3">
-              <legend className="text-h4 text-text">Conditions & Constraints</legend>
-              <button onClick={handleAddCondition} className="flex items-center gap-2 text-caption text-accent hover:text-accent/80 transition-colors">
-                <PlusIcon className="w-4 h-4" />
-                <span>Add Condition</span>
-              </button>
-            </div>
-            <div className="space-y-2">
-              {options.conditions.map((condition, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={condition}
-                    onChange={(e) => handleConditionChange(index, e.target.value)}
-                    placeholder="e.g., 'must be budget-friendly', 'avoid clichés'"
-                    className="w-full bg-background border border-secondary rounded-md p-2 text-text focus:ring-2 focus:ring-accent focus:border-accent transition-colors placeholder-neutral"
-                  />
-                  <button 
-                    onClick={() => handleImproveCondition(index)} 
-                    disabled={improvingIndex === index}
-                    className="p-2 text-text-secondary hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {improvingIndex === index ? (
-                      <svg className="animate-spin h-4 w-4 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    ) : (
-                      <SparklesIcon className="w-4 h-4" />
-                    )}
-                  </button>
-                  <button onClick={() => handleRemoveCondition(index)} className="p-2 text-text-secondary hover:text-red-400 transition-colors">
-                    <TrashIcon className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </fieldset>
+    <BaseModal isOpen={isOpen} onClose={onClose} title="Brainstorm" description="Fine-tune the AI's creative process." maxWidth="600px">
+      {/* Creativity slider */}
+      <fieldset style={{ border: 'none', padding: 0, margin: 0, marginBottom: '20px' }}>
+        <legend className="text-label" style={{ marginBottom: '12px', display: 'block' }}>Creativity Level</legend>
+        <input
+          type="range"
+          min="1"
+          max="4"
+          step="1"
+          value={options.creativity}
+          onChange={(e) => setOptions(prev => ({ ...prev, creativity: parseInt(e.target.value, 10) }))}
+          style={{
+            width: '100%',
+            height: '4px',
+            appearance: 'none',
+            background: 'var(--bg-tertiary)',
+            borderRadius: '2px',
+            cursor: 'pointer',
+            accentColor: 'var(--accent-primary)',
+          }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+          {creativityLevels.map(level => (
+            <span key={level.value} style={{
+              fontSize: '10px',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.03em',
+              color: options.creativity === level.value ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+            }}>
+              {level.label}
+            </span>
+          ))}
         </div>
+      </fieldset>
 
-        <div className="mt-8 flex justify-between items-center">
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={saveAsNew}
-              onChange={(e) => setSaveAsNew(e.target.checked)}
-              className="hidden"
-            />
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 ${saveAsNew ? 'border-accent bg-accent' : 'border-neutral'}`}>
-              {saveAsNew && <svg className="w-2.5 h-2.5 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
-            </div>
-            <span className={`text-caption select-none ${saveAsNew ? 'text-text' : 'text-text-secondary'}`}>Save as New Note</span>
-          </label>
-          <div className="flex space-x-4">
+      {/* Keywords */}
+      <fieldset style={{ border: 'none', padding: 0, margin: 0, marginBottom: '20px' }}>
+        <legend className="text-label" style={{ marginBottom: '8px', display: 'block' }}>Keywords & Prompts</legend>
+        <textarea
+          value={options.keywords}
+          onChange={(e) => setOptions(prev => ({ ...prev, keywords: e.target.value }))}
+          placeholder="e.g., 'marketing strategies', 'sci-fi plot ideas'"
+          className="textarea-neo w-full"
+          style={{ minHeight: '80px' }}
+        />
+      </fieldset>
+
+      {/* Conditions */}
+      <fieldset style={{ border: 'none', padding: 0, margin: 0, marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <legend className="text-label">Conditions</legend>
           <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-2 rounded-md text-caption bg-secondary hover:bg-secondary/80 border border-secondary text-text transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            className="px-6 py-2 rounded-md text-caption text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+            onClick={handleAddCondition}
             style={{
-              background: theme === 'indigo-purple' ? 'var(--gradient-button)' : undefined
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.03em',
+              color: 'var(--accent-primary)',
+              padding: '4px',
             }}
           >
-            Brainstorm Ideas
+            <PlusIcon className="w-3.5 h-3.5" />
+            <span>Add</span>
           </button>
         </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {options.conditions.map((condition, index) => (
+            <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <input
+                type="text"
+                value={condition}
+                onChange={(e) => handleConditionChange(index, e.target.value)}
+                placeholder="e.g., 'must be budget-friendly'"
+                className="input-neo"
+                style={{ flex: 1, height: '36px', fontSize: '12px' }}
+              />
+              <button
+                className="btn-neo btn-neo-ghost btn-neo-icon btn-neo-sm"
+                onClick={() => handleImproveCondition(index)}
+                disabled={improvingIndex === index}
+              >
+                {improvingIndex === index ? (
+                  <div style={{ width: '14px', height: '14px', border: '2px solid var(--border-secondary)', borderTopColor: 'var(--accent-primary)', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+                ) : (
+                  <SparklesIcon className="w-3.5 h-3.5" style={{ color: 'var(--accent-primary)' }} />
+                )}
+              </button>
+              <button
+                className="btn-neo btn-neo-ghost btn-neo-icon btn-neo-sm"
+                onClick={() => handleRemoveCondition(index)}
+              >
+                <TrashIcon className="w-3.5 h-3.5" style={{ color: '#ef4444' }} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </fieldset>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          fontSize: '11px',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.03em',
+          color: saveAsNew ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+        }}>
+          <input type="checkbox" checked={saveAsNew} onChange={(e) => setSaveAsNew(e.target.checked)} style={{ display: 'none' }} />
+          <div style={{
+            width: '12px',
+            height: '12px',
+            borderRadius: '2px',
+            border: `2px solid ${saveAsNew ? 'var(--accent-primary)' : 'var(--border-secondary)'}`,
+            background: saveAsNew ? 'var(--accent-primary)' : 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            {saveAsNew && <svg style={{ width: '8px', height: '8px', color: 'var(--accent-fg)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
+          </div>
+          Save as New
+        </label>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn-neo" onClick={onClose}>Cancel</button>
+          <button className="btn-neo btn-neo-accent" onClick={handleConfirm}>Brainstorm</button>
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 };
 
